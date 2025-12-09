@@ -23,6 +23,23 @@ El presente trabajo cubre tres funcionalidades:
 # 📈 Metodología
 <img width="2000" height="499" alt="imagen" src="https://github.com/user-attachments/assets/33deec69-4487-4332-b0b6-7082d975d267" />
 
+# 📂 Estructura del repositorio
+La estructura de carpetas con la documentación de Github es la presentada a continuación:
+
+ARCHIVOS:
+- TFM_LourdesVillafana v4_final.pdf	----------Documento donde se explica el trabajo realizado para el fin de master
+- Presentacion_TFM.mp4	-------------------		Video de 5 minutos para presentar el trabajo
+- 00 Codigo ML Model.html	----------------		Código completo del trabajo elaborado en Google Colab
+- 01 app_v2.py.html	----------------------		Codigo de la app utilizando flask
+- 02 Funcion_Limpieza.py.html	--------------	Funciones que utiliza "01 app_v2.py.html"
+
+CARPETAS:
+- web ------------------- Codigos utilizados para crear la app
+- Codigos --------------- Codigo completo del trabajo
+- dump SQL -------------- Dump de la base de datos de SQL Workbench
+
+
+
 # 👤 Autor
 Lourdes Villafaña
 
