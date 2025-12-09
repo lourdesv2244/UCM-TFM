@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>Pagina de inicio</title>
+	<!-- <link rel="stylesheet" type="text/css" href="../static/css/styles.css"> -->
+	<!--<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}"> -->
+	<link rel="stylesheet" type="text/css" href="static/styles.css">
+
+</head>
+<body>
+
+<img src="static/banner2.png"> 
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font size=6> <strong> BIENVENIDOS </strong></font>
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+<font face="Calibri" size=4> Aplicación para predecir el precio de las viviendas en Iowa en base a la carga de un archivo.</font>
+<br> <br> <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<font face="Calibri" size=4> <strong> Selecciona el archivo a cargar: </strong></font>
+<br> <br> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<table>
+<tr>
+	<form action="{{ url_for('predict')}}" method="POST" enctype="multipart/form-data">
+    		<input type="file" name="fileupload" id="fileToUpload">
+    		<input type="submit" value="Upload File" name="submit">
+	</form>
+</tr>
+</table>
+<br><br><br><br>
+
+</body>
+</html>

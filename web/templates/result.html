@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+	<img scr="static/housesbanner.png">
+</head>
+
+<style type="text/css">
+     table{
+        width: 50%;
+      }
+
+     table, th, td {
+         border: 1px solid black;
+      }
+</style>
+<body background="static/fondo1.png" bgcolor="#BFC9CA">
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<strong>RESULTADO CON LA PREDICCION DE PRECIOS</strong>
+<BR>
+<BR>
+<table>		
+		<tr>
+		  <td><strong>ID</strong></td>
+		  <td><strong>Precio Estimado</strong></td>
+		</tr>		
+		<tr>
+		  {% for i,j in tam%}
+		<tr>
+		  <td>{{i}}</td>
+		  <td>{{j}}</td>
+		</tr>
+		{% endfor %}
+		
+	</table>
+<br>
+<br>
+</body>
+</html>
