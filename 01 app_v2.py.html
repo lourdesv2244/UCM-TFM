@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>app_v2.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+app_v2.py</font>
+</center></td></tr></table>
+<pre><span class="s0">from </span><span class="s1">flask </span><span class="s0">import </span><span class="s1">Flask</span><span class="s0">, </span><span class="s1">render_template</span><span class="s0">, </span><span class="s1">url_for</span><span class="s0">, </span><span class="s1">request</span><span class="s0">, </span><span class="s1">redirect</span>
+<span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd</span>
+<span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s2">#import pickle</span>
+<span class="s0">from </span><span class="s1">sklearn.feature_extraction.text </span><span class="s0">import </span><span class="s1">CountVectorizer</span>
+<span class="s0">from </span><span class="s1">sklearn.naive_bayes </span><span class="s0">import </span><span class="s1">MultinomialNB</span>
+<span class="s0">import </span><span class="s1">joblib</span>
+<span class="s0">from </span><span class="s1">werkzeug.utils </span><span class="s0">import </span><span class="s1">secure_filename</span>
+<span class="s0">from </span><span class="s1">werkzeug.datastructures </span><span class="s0">import  </span><span class="s1">FileStorage</span>
+<span class="s0">import </span><span class="s1">os</span>
+<span class="s0">from </span><span class="s1">scipy </span><span class="s0">import </span><span class="s1">stats</span>
+<span class="s0">from </span><span class="s1">scipy.stats </span><span class="s0">import </span><span class="s1">norm</span><span class="s0">, </span><span class="s1">skew</span>
+<span class="s0">from </span><span class="s1">Funcion_Limpieza </span><span class="s0">import </span><span class="s1">limpieza</span><span class="s0">, </span><span class="s1">insertadb</span>
+
+<span class="s1">app = Flask(__name__)</span>
+
+
+<span class="s1">uploads_dir = </span><span class="s3">'/instance/uploads'</span>
+<span class="s1">os.makedirs(uploads_dir</span><span class="s0">, </span><span class="s1">exist_ok=</span><span class="s0">True</span><span class="s1">)</span>
+
+<span class="s1">@app.route(</span><span class="s3">'/'</span><span class="s1">)</span>
+<span class="s0">def </span><span class="s1">home():</span>
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s3">'home.html'</span><span class="s1">)</span>
+
+<span class="s1">@app.route(</span><span class="s3">'/predict'</span><span class="s0">, </span><span class="s1">methods=[</span><span class="s3">'POST'</span><span class="s1">])</span>
+<span class="s0">def </span><span class="s1">predict():</span>
+
+
+    <span class="s1">modelo = open(</span><span class="s3">'modelo_RF_hp.pkl'</span><span class="s0">, </span><span class="s3">'rb'</span><span class="s1">)</span>
+    <span class="s1">clf = joblib.load(modelo)</span>
+
+
+    <span class="s0">if </span><span class="s1">request.method == </span><span class="s3">'POST'</span><span class="s1">:</span>
+        <span class="s1">message = request.files[</span><span class="s3">'fileupload'</span><span class="s1">]</span>
+        <span class="s1">message.save(os.path.join(uploads_dir</span><span class="s0">, </span><span class="s1">secure_filename(message.filename)))</span>
+        <span class="s1">data = pd.read_csv(message.filename)</span>
+        <span class="s1">df_id = data[</span><span class="s3">&quot;Id&quot;</span><span class="s1">]</span>
+
+        <span class="s1">datos = limpieza(data)</span>
+
+        <span class="s1">my_prediction = np.expm1(clf.predict(datos))</span>
+
+        <span class="s1">df_id_b = pd.DataFrame(df_id</span><span class="s0">, </span><span class="s1">columns=[</span><span class="s3">'Id'</span><span class="s1">])</span>
+        <span class="s1">df_mypred = pd.DataFrame(my_prediction</span><span class="s0">, </span><span class="s1">columns=[</span><span class="s3">'pred'</span><span class="s1">])</span>
+        <span class="s1">df_id_bi = pd.concat([df_id_b</span><span class="s0">, </span><span class="s1">df_mypred]</span><span class="s0">, </span><span class="s1">axis=</span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">df_id_b = df_id_bi.to_numpy()</span>
+
+        <span class="s1">insertar = insertadb(df_id_bi)</span>
+
+
+    <span class="s0">return </span><span class="s1">render_template(</span><span class="s3">'result.html'</span><span class="s0">, </span><span class="s1">prediction=my_prediction</span><span class="s0">, </span><span class="s1">tam=df_id_b)</span>
+
+
+<span class="s0">if </span><span class="s1">__name__ == </span><span class="s3">'__main__'</span><span class="s1">:</span>
+    <span class="s1">app.run(debug=</span><span class="s0">True</span><span class="s1">)</span>
+
+
+</pre>
+</body>
+</html>

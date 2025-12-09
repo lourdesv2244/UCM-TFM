@@ -1,0 +1,117 @@
+<html>
+<head>
+<title>Funcion_Limpieza.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Funcion_Limpieza.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd</span>
+<span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s0">from </span><span class="s1">scipy </span><span class="s0">import </span><span class="s1">stats</span>
+<span class="s0">from </span><span class="s1">scipy.stats </span><span class="s0">import </span><span class="s1">norm</span><span class="s0">, </span><span class="s1">skew</span>
+<span class="s0">import </span><span class="s1">mysql.connector</span>
+
+<span class="s0">def </span><span class="s1">limpieza(data):</span>
+
+
+    <span class="s2">#PRE-PROCESSING &amp; DATA CLEANING</span>
+        <span class="s1">train = pd.read_csv(</span><span class="s3">'train.csv'</span><span class="s1">)</span>
+        <span class="s1">df_id = data[</span><span class="s3">&quot;Id&quot;</span><span class="s1">]</span>
+        <span class="s1">df_id = df_id.to_numpy()</span>
+        <span class="s1">train = train.drop([</span><span class="s3">&quot;SalePrice&quot;</span><span class="s1">]</span><span class="s0">, </span><span class="s1">axis=</span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">junto_df = pd.concat([train</span><span class="s0">, </span><span class="s1">data]</span><span class="s0">, </span><span class="s1">ignore_index=</span><span class="s0">True</span><span class="s1">)</span>
+
+        <span class="s2">#Manejo de categoricas</span>
+        <span class="s1">categoricas = [col </span><span class="s0">for </span><span class="s1">col </span><span class="s0">in </span><span class="s1">junto_df.columns.values </span><span class="s0">if </span><span class="s1">junto_df[col].dtype == </span><span class="s3">'object'</span><span class="s1">]</span>
+        <span class="s1">categoricas_df = junto_df[categoricas]</span>
+        <span class="s1">numericas_df = junto_df.drop(categoricas</span><span class="s0">, </span><span class="s1">axis=</span><span class="s4">1</span><span class="s1">)</span>
+
+        <span class="s2">#Manejo de asimetria para numericas</span>
+        <span class="s1">num_skew = numericas_df.apply(</span><span class="s0">lambda </span><span class="s1">x: skew(x.dropna()))</span>
+        <span class="s1">num_skew = num_skew[num_skew &gt; </span><span class="s4">0.75</span><span class="s1">]</span>
+        <span class="s1">numericas_df[num_skew.index] = np.log1p(numericas_df[num_skew.index])</span>
+
+        <span class="s2">#Manejo de missing values</span>
+        <span class="s1">data_len = numericas_df.shape[</span><span class="s4">0</span><span class="s1">]</span>
+
+        <span class="s0">for </span><span class="s1">col </span><span class="s0">in </span><span class="s1">numericas_df.columns.values:</span>
+            <span class="s1">missing_values = numericas_df[col].isnull().sum()</span>
+
+            <span class="s2"># drop si tiene mas de 50 valores valores missing</span>
+            <span class="s0">if </span><span class="s1">missing_values &gt; </span><span class="s4">50</span><span class="s1">:</span>
+                <span class="s1">numericas_df = numericas_df.drop(col</span><span class="s0">, </span><span class="s1">axis=</span><span class="s4">1</span><span class="s1">)</span>
+            <span class="s2"># Si es menor a 50, lo lleno con la media</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s1">numericas_df = numericas_df.fillna(numericas_df[col].median())</span>
+
+
+        <span class="s1">data_len = categoricas_df.shape[</span><span class="s4">0</span><span class="s1">]</span>
+
+        <span class="s0">for </span><span class="s1">col </span><span class="s0">in </span><span class="s1">categoricas_df.columns.values:</span>
+            <span class="s1">missing_values = categoricas_df[col].isnull().sum()</span>
+
+            <span class="s2"># drop si tiene mas de 50 valores missing</span>
+            <span class="s0">if </span><span class="s1">missing_values &gt; </span><span class="s4">50</span><span class="s1">:</span>
+                <span class="s1">print(</span><span class="s3">&quot;Eliminando columna: {}&quot;</span><span class="s1">.format(col))</span>
+                <span class="s1">categoricas_df = categoricas_df.drop(col</span><span class="s0">, </span><span class="s1">axis=</span><span class="s4">1</span><span class="s1">)</span>
+
+            <span class="s2"># Si es menor a 50, lo lleno con 'No Aplica'</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s1">categoricas_df = categoricas_df.fillna(</span><span class="s3">'No aplica'</span><span class="s1">)</span>
+                <span class="s0">pass</span>
+
+        <span class="s1">categoricas_df_dummies = pd.get_dummies(categoricas_df)</span>
+        <span class="s1">datos = pd.concat([numericas_df</span><span class="s0">, </span><span class="s1">categoricas_df_dummies]</span><span class="s0">, </span><span class="s1">axis=</span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">datos = datos.drop([</span><span class="s3">&quot;Id&quot;</span><span class="s1">]</span><span class="s0">, </span><span class="s1">axis=</span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s1">datos = datos.iloc[len(train):]</span>
+
+        <span class="s2">#FIN PRE-PROCESSING &amp; DATA CLEANING</span>
+
+        <span class="s2">#INSERTO EN BASE DE DATOS</span>
+
+
+        <span class="s1">miConexion = mysql.connector.connect(host=</span><span class="s3">'localhost'</span><span class="s0">, </span><span class="s1">user=</span><span class="s3">'root'</span><span class="s0">, </span><span class="s1">passwd=</span><span class="s3">'root'</span><span class="s0">, </span><span class="s1">db=</span><span class="s3">'modelo_casas'</span><span class="s1">)</span>
+        <span class="s1">cur = miConexion.cursor()</span>
+
+        <span class="s2">#train = pd.read_csv('test_carga_mysql.csv', index_col=False, delimiter=',')</span>
+        <span class="s1">train = data</span>
+        <span class="s1">train = train.fillna(</span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s0">for </span><span class="s1">i</span><span class="s0">, </span><span class="s1">row </span><span class="s0">in </span><span class="s1">train.iterrows():</span>
+            <span class="s1">sql = </span><span class="s3">&quot;INSERT INTO modelo_casas.casas VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0,0)&quot;</span>
+            <span class="s1">cur.execute(sql</span><span class="s0">, </span><span class="s1">tuple(row))</span>
+            <span class="s1">miConexion.commit()</span>
+
+        <span class="s1">miConexion.close()</span>
+
+        <span class="s2">#FIN DE INSERTAR EN BASE DE DATOS</span>
+
+        <span class="s0">return </span><span class="s1">datos</span>
+
+
+<span class="s0">def </span><span class="s1">insertadb(df_id_b):</span>
+
+    <span class="s1">miConexion = mysql.connector.connect(host=</span><span class="s3">'localhost'</span><span class="s0">, </span><span class="s1">user=</span><span class="s3">'root'</span><span class="s0">, </span><span class="s1">passwd=</span><span class="s3">'root'</span><span class="s0">, </span><span class="s1">db=</span><span class="s3">'modelo_casas'</span><span class="s1">)</span>
+    <span class="s1">cur = miConexion.cursor()</span>
+
+    <span class="s0">for </span><span class="s1">i</span><span class="s0">, </span><span class="s1">row </span><span class="s0">in </span><span class="s1">df_id_b.iterrows():</span>
+        <span class="s1">sql = </span><span class="s3">&quot;UPDATE modelo_casas.casas SET Prediccion = %s WHERE ID = %s&quot;</span>
+        <span class="s1">cur.execute(sql</span><span class="s0">, </span><span class="s1">(row[</span><span class="s3">'pred'</span><span class="s1">]</span><span class="s0">, </span><span class="s1">row[</span><span class="s3">'Id'</span><span class="s1">]))</span>
+        <span class="s1">miConexion.commit()</span>
+
+    <span class="s1">miConexion.close()</span>
+
+    <span class="s0">return</span></pre>
+</body>
+</html>
