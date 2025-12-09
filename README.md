@@ -1,3 +1,6 @@
+![IRYCIS_complutense_logo](https://github.com/user-attachments/assets/e20958bb-79c0-473d-85b1-59a728a95e1a)
+
+
 # TFM: House Prices - Advanced Regression Techniques
 
 <img width="1000" height="177" alt="kaggle_5407_media_housesbanner" src="https://github.com/user-attachments/assets/eae9aee1-e1b7-43d5-96a8-79b5dd41fe11" />
